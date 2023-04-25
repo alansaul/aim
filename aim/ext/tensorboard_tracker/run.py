@@ -18,9 +18,9 @@ def _filter_tensorboard_message():
     def message_filter(record) -> bool:
         unwanted_message = "No path found after"
         if unwanted_message in record.msg:
-            return True
-        else:
             return False
+        else:
+            return True
 
     logger = get_tb_logger()
     logger.addFilter(message_filter)
