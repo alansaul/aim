@@ -1,5 +1,7 @@
 from typing import Optional, Union
 
+from tensorboard.util.tb_logging import get_logger as get_tb_logger
+
 from aim.sdk.run import Run as SdkRun
 from aim.ext.tensorboard_tracker.tracker import TensorboardTracker
 
@@ -7,6 +9,21 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from aim.sdk.repo import Repo
+
+
+def _filter_tensorboard_message():
+    """
+    Filter noisy messages from tensorboard log watching
+    """
+    def message_filter(record) -> bool:
+        unwanted_message = "No path found after"
+        if unwanted_message in record.msg:
+            return True
+        else:
+            return False
+
+    logger = get_tb_logger()
+    logger.addFilter(message_filter)
 
 
 class Run(SdkRun):
@@ -25,7 +42,7 @@ class Run(SdkRun):
             system_tracking_interval=system_tracking_interval, log_system_params=log_system_params,
             capture_terminal_logs=capture_terminal_logs
         )
-
+        _filter_tensorboard_message()
         self['tb_log_directory'] = sync_tensorboard_log_dir
         self._tensorboard_tracker = TensorboardTracker(self._tracker, sync_tensorboard_log_dir)
         self._tensorboard_tracker.start()
