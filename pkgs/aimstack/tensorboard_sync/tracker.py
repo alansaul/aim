@@ -11,7 +11,7 @@ import weakref
 import queue
 
 from typing import Any
-from aim import Audio, Image, Distribution
+from aim import Audio, Image, Distribution, Text
 
 
 def _decode_histogram(value):
@@ -123,7 +123,7 @@ class TensorboardTracker:
 class TensorboardFolderTracker:
     def __init__(self, tensorboard_event_folder: str, queue: queue.Queue) -> None:
         self.queue = queue
-        self.supported_plugins = ("images", "scalars", "histograms")
+        self.supported_plugins = ("images", "scalars", "histograms", "text")
         self.unsupported_plugin_noticed = False
         self.folder_name = os.path.basename(tensorboard_event_folder)
         self._thread = threading.Thread(target=self._process_event)
@@ -186,6 +186,8 @@ class TensorboardFolderTracker:
                             track_val = track_val[0]
                     elif plugin_name == "histograms":
                         track_val = _decode_histogram_from_plugin(value)
+                    elif plugin_name == "text":
+                        track_val = Text(value.tensor.string_val[0].decode("utf-8"))
                     elif plugin_name == "scalars" or plugin_name == "":
                         track_val = create_ndarray(value.tensor)
                     else:
