@@ -7,10 +7,10 @@ from tensorboard.compat.proto.tensor_pb2 import TensorProto
 from tensorboard.compat.proto.tensor_shape_pb2 import TensorShapeProto
 from tensorboard.compat.proto.event_pb2 import Event
 from tensorboard.util.tensor_util import make_tensor_proto
-from torch.utils.tensorboard.summary import image, scalar, histogram, histogram_raw
+from torch.utils.tensorboard.summary import image, scalar, histogram, histogram_raw, text
 
 from aim import Image, Distribution
-from aimstack.tensorboard_tracker.tracker import TensorboardFolderTracker
+from aimstack.tensorboard_sync.tracker import TensorboardFolderTracker
 
 from unit_tests.base import TestBase
 
@@ -112,6 +112,21 @@ class TestTensorboardTracker(TestBase):
         tracked_scalar = queue.get().value
         self.assertTrue(isinstance(tracked_scalar, np.ndarray))
         self.assertTrue(np.allclose(tracked_scalar, scalar_np))
+
+    def test__process_tb_text_plugin_event(self):
+        # Given
+        queue = Queue()
+        tracker = TensorboardFolderTracker(tensorboard_event_folder='dummy', queue=queue)
+        text_summary = text('test_text', 'dummy_text')
+        event = Event(summary=text_summary)
+
+        # When
+        tracker._process_tb_event(event)
+
+        # Then
+        tracked_text = queue.get().value
+        self.assertTrue(isinstance(tracked_text, str))
+        self.assertEqual(tracked_text, 'dummy_text')
 
     def test__process_tb_histogram_event(self):
         # Given
