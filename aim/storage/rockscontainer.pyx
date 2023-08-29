@@ -73,7 +73,7 @@ class RocksContainer(Container):
             keep_log_file_num=10,
             skip_stats_update_on_db_open=True,
             skip_checking_sst_file_sizes_on_db_open=True,
-            max_open_files=-1,
+            max_open_files=4096,
             write_buffer_size=1024 * 1024,  # 1MB
             db_write_buffer_size=1024 * 1024,  # 1MB
             max_write_buffer_number=1,
